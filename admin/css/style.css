@@ -1,0 +1,92 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+#wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.navbar {
+  background-color: #f8f9fa;
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 20px;
+  border-bottom: 1px solid #ddd;
+}
+
+.navbar-brand {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.navbar-user {
+  position: relative;
+}
+
+.user-link {
+  text-decoration: none;
+  color: #333;
+}
+
+#page-body {
+  display: flex;
+  flex: 1;
+}
+
+#sidebar {
+  width: 200px;
+  background-color: #007bff;
+  color: white;
+  padding: 20px;
+}
+
+#sidebar-menu {
+  list-style: none;
+  padding: 0;
+}
+
+.nav-link {
+  margin-bottom: 10px;
+}
+
+.nav-link a {
+  color: white;
+  text-decoration: none;
+}
+
+#wp-content {
+  flex: 1;
+  padding: 20px;
+  background-color: #f8f9fa;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+table,
+th,
+td {
+  border: 1px solid #ddd;
+}
+
+th,
+td {
+  padding: 10px;
+  text-align: left;
+}
+
+th {
+  background-color: #007bff;
+  color: white;
+}
+
+button {
+  margin-right: 5px;
+}
