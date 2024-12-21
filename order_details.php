@@ -1,9 +1,16 @@
 <?php
 session_start();
+include("connection.php");
+
+// Kiểm tra xem người dùng đã đăng nhập với vai trò admin chưa
+if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    header("Location: login.php");
+    exit();
+}
 
 // Xử lý xóa tài khoản
-if (isset($_GET['delete'])) {
-    $maKH = (int)$_GET['delete'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete'])) {
+    $maKH = (int)$_POST['delete'];
     $sql = "DELETE FROM khachhang WHERE MaKH = ?";
     $stmt = $mysqli->prepare($sql);
     $stmt->bind_param("i", $maKH);
@@ -31,6 +38,7 @@ $result = $mysqli->query($sql);
             font-family: Arial, sans-serif;
             background-color: rgb(250, 248, 250);
             margin: 0;
+            padding: 20px;
         }
         table {
             width: 100%;
@@ -66,9 +74,11 @@ $result = $mysqli->query($sql);
 </head>
 <body>
     <h2>Quản Lý Tài Khoản</h2>
+
     <?php if (isset($message)): ?>
         <div class="message"><?php echo $message; ?></div>
     <?php endif; ?>
+    
     <table>
         <thead>
             <tr>
@@ -88,12 +98,14 @@ $result = $mysqli->query($sql);
                     <td><?php echo $row['DiaChi']; ?></td>
                     <td>
                         <a href="edit_account.php?id=<?php echo $row['MaKH']; ?>" class="btn sua">Sửa</a>
-                        <a href="?delete=<?php echo $row['MaKH']; ?>" class="btn xoa" onclick="return confirm('Bạn có chắc chắn muốn xóa tài khoản này?');">Xóa</a>
+                        <form action="" method="POST" style="display:inline;">
+                            <input type="hidden" name="delete" value="<?php echo $row['MaKH']; ?>">
+                            <button type="submit" class="btn xoa" onclick="return confirm('Bạn có chắc chắn muốn xóa tài khoản này?');">Xóa</button>
+                        </form>
                     </td>
                 </tr>
             <?php endwhile; ?>
         </tbody>
     </table>
-    <a href="admin_dashboard.php" class="btn">Quay lại Dashboard</a>
 </body>
 </html>

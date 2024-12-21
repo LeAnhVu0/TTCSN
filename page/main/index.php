@@ -1,26 +1,70 @@
-
 <div class="maincontent">
     <div class="product-list">
-        <!-- Product 1 -->
         <?php
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        // Xử lý khi nhấn nút "Thêm giỏ hàng"
+        if (isset($_POST['themgiohang'])) {
+            // Kiểm tra xem người dùng có đăng nhập không
+            if (!isset($_SESSION['user_id'])) { 
+                header('Location: login.php');
+                exit();
+            }
+
+            // Lấy ID sản phẩm từ request
+            $idSanPham = $_POST['idSanPham'];
+            $maKhachHang = $_SESSION['user_id']; // Lấy mã khách hàng từ session
+
+            // Lấy mã giỏ hàng của khách hàng
+            $sql = "SELECT MaGioHang FROM khachhang WHERE MaKH = $maKhachHang";
+            $result = $mysqli->query($sql);
+            $row = $result->fetch_assoc();
+
+            if ($row) {
+                $maGioHang = $row['MaGioHang']; // Nếu đã có giỏ hàng
+            } else {
+                // Nếu chưa có giỏ hàng, tạo giỏ hàng mới
+                $mysqli->query("INSERT INTO giohang () VALUES ()");
+                $maGioHang = $mysqli->insert_id; // Lấy mã giỏ hàng mới
+                // Cập nhật mã giỏ hàng vào bảng khách hàng
+                $mysqli->query("UPDATE khachhang SET MaGioHang = $maGioHang WHERE MaKH = $maKhachHang");
+            }
+
+            // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
+            $checkProduct = $mysqli->query("SELECT * FROM sanpham_giohang WHERE MaSP = $idSanPham AND MaGioHang = $maGioHang");
+            if ($checkProduct->num_rows > 0) {
+                // Nếu sản phẩm đã có, cập nhật số lượng
+                $mysqli->query("UPDATE sanpham_giohang SET SoLuong = SoLuong + 1 WHERE MaSP = $idSanPham AND MaGioHang = $maGioHang");
+            } else {
+                // Nếu chưa có sản phẩm, thêm mới vào giỏ hàng với số lượng là 1
+                $mysqli->query("INSERT INTO sanpham_giohang (MaSP, MaGioHang, SoLuong) VALUES ($idSanPham, $maGioHang, 1)");
+            }
+        }
+
+        // Truy vấn sản phẩm
         $sql = "SELECT * FROM sanpham";
         $result = mysqli_query($mysqli, $sql);
         
-        if($result && mysqli_num_rows($result) > 0) {
-            while($row = mysqli_fetch_assoc($result)) {
+        if ($result && mysqli_num_rows($result) > 0) {
+            while ($row = mysqli_fetch_assoc($result)) {
                 // Thay thế đường dẫn hình ảnh
                 $imagePath = str_replace('../', './', $row['HinhAnh']);
         ?>
-            <div class="product-item">
-                <div class="product-badge">Giảm 3%</div>
-                <img src="<?php echo $imagePath; ?>" alt="<?php echo $row['TenSP']; ?>" class="product-image">
-                <h3 class="product-title"><?php echo $row['TenSP']; ?></h3>
-                <p class="product-price">
-                    <span class="discount-price"><?php echo number_format($row['GiaBan'], 0, ',', '.'); ?> VNĐ</span>
-                    <span class="original-price"><?php echo number_format($row['Gia'], 0, ',', '.'); ?> VNĐ</span>
-                </p>
-                <button class="product-rating">Thêm giỏ hàng</button>
-            </div>
+                <div class="product-item">
+                    <div class="product-badge">Giảm 3%</div>
+                    <img src="<?php echo $imagePath; ?>" alt="<?php echo $row['TenSP']; ?>" class="product-image">
+                    <h3 class="product-title"><?php echo $row['TenSP']; ?></h3>
+                    <p class="product-price">
+                        <span class="discount-price"><?php echo number_format($row['GiaBan'], 0, ',', '.'); ?> VNĐ</span>
+                        <span class="original-price"><?php echo number_format($row['Gia'], 0, ',', '.'); ?> VNĐ</span>
+                    </p>
+                    <form method="POST" action="">
+                        <input type="hidden" name="idSanPham" value="<?php echo $row['MaSP']; ?>">
+                        <button class="product-rating" name="themgiohang">Thêm giỏ hàng</button>
+                    </form>
+                </div>
         <?php 
             }
         } else {
@@ -29,4 +73,3 @@
         ?>
     </div>
 </div>
-

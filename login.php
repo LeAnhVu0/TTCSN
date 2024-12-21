@@ -8,85 +8,119 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: rgb(250, 248, 250); /* Màu nền tổng thể */
+      background-color: rgb(250, 248, 250);
       margin: 0;
       padding: 0;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh; /* Chiều cao đầy đủ màn hình */
+      height: 100vh;
     }
 
     .login-container {
-      background-color: #ffffff; /* Màu nền của ô đăng nhập */
-      border-radius: 10px; /* Góc bo cho ô đăng nhập */
-      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Hiệu ứng bóng */
-      padding: 40px; /* Khoảng trắng bên trong ô đăng nhập */
-      width: 300px; /* Chiều rộng cố định */
+      background-color: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+      padding: 40px;
+      width: 300px;
     }
 
     h2 {
-      text-align: center; /* Căn giữa tiêu đề */
-      color: #3498db; /* Màu chữ tiêu đề */
-      margin-bottom: 20px; /* Khoảng cách dưới tiêu đề */
+      text-align: center;
+      color: #3498db;
+      margin-bottom: 20px;
     }
 
     .form-group {
-      margin-bottom: 15px; /* Khoảng cách giữa các ô nhập */
+      margin-bottom: 15px;
     }
 
     label {
-      display: block; /* Căn chỉnh label */
-      margin-bottom: 5px; /* Khoảng cách dưới label */
-      color: #333; /* Màu chữ label */
+      display: block;
+      margin-bottom: 5px;
+      color: #333;
     }
 
     input[type="text"],
     input[type="password"] {
-      width: 100%; /* Độ rộng 100% */
-      padding: 10px; /* Khoảng cách trong ô nhập */
-      border: 1px solid #ccc; /* Màu viền ô nhập */
-      border-radius: 5px; /* Góc bo cho ô nhập */
-      box-sizing: border-box; /* Đảm bảo padding không làm tăng chiều rộng */
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
     }
 
     button {
-      background-color: #3498db; /* Màu nền nút ĐĂNG NHẬP */
-      color: #ffffff; /* Màu chữ nút */
-      border: none; /* Không có viền */
-      padding: 10px; /* Khoảng cách trong nút */
-      border-radius: 5px; /* Góc bo cho nút */
-      cursor: pointer; /* Con trỏ khi hover */
-      width: 100%; /* Độ rộng 100% */
-      font-size: 16px; /* Kích thước chữ */
+      background-color: #3498db;
+      color: #ffffff;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+      font-size: 16px;
     }
 
     button:hover {
-      background-color: #2980b9; /* Màu nền khi di chuột */
+      background-color: #2980b9;
     }
 
     .register-link {
-      text-align: center; /* Căn giữa liên kết đăng ký */
-      margin-top: 15px; /* Khoảng cách trên liên kết */
-      color: #555; /* Màu chữ liên kết */
+      text-align: center;
+      margin-top: 15px;
+      color: #555;
     }
 
     .register-link a {
-      color: #3498db; /* Màu chữ liên kết đăng ký */
-      text-decoration: none; /* Không gạch chân liên kết */
+      color: #3498db;
+      text-decoration: none;
     }
 
     .register-link a:hover {
-      text-decoration: underline; /* Gạch chân khi hover */
+      text-decoration: underline;
+    }
+
+    .error-message {
+      color: red;
+      text-align: center;
+      margin-top: 10px;
     }
   </style>
 </head>
 
 <body>
   <?php
-    include("./connection.php");
-  ?>
+  session_start(); // Bắt đầu phiên
+  include("./connection.php");
 
+  if (isset($_POST["login"])) {
+      $username = $_POST['username'];
+      $password = $_POST['password'];
+
+      // Truy vấn cơ sở dữ liệu
+      $sql = "SELECT * FROM khachhang WHERE SoDienThoai='$username' AND MatKhau='$password'"; 
+      $result = $mysqli->query($sql);
+      
+      if ($result && $result->num_rows == 1) {
+          // Lưu thông tin người dùng vào session
+          $user = $result->fetch_assoc();
+          $_SESSION['user_id'] = $user['MaKH']; 
+          $_SESSION['username'] = $user['TenKH'];
+          header("Location: index.php");
+          exit();
+      }
+      elseif($username == "admin" || $password == "12345") {
+
+        header("Location: admin/index.php");
+      }
+      else {
+          $error_message = "Tài khoản hoặc mật khẩu không chính xác.";
+      }
+  }
+
+  $mysqli->close();
+  ?>
+  
   <div class="login-container">
     <h2>Đăng Nhập</h2>
     <form method="POST" action="">
@@ -98,30 +132,12 @@
         <label for="password">Mật khẩu:</label>
         <input type="password" id="password" name="password" required>
       </div>
-      <?php
-    if(isset($_POST["login"])) {
-        $b = 1;
-        $username = $_POST['username'];
-        $password = $_POST['password'];
-        if($username == "admin" || $password == "12345") {
-            header("Location: admin/index.php");
-            $b = 2;
-        }
-        $sql = "SELECT * FROM KhachHang WHERE SoDienThoai='$username' AND MatKhau='$password'"; 
-        $result = $mysqli->query($sql);
-        if($result->num_rows == 1) {
-            header("Location: index.php");
-            $b = 2;
-        }
-        if($b == 1) {
-            echo "<p style='color: red; text-align: center;'>Tài khoản không chính xác</p>";
-        }
-    }
-    $mysqli->close();
-  ?>
+      <?php if (isset($error_message)): ?>
+          <p class="error-message"><?php echo $error_message; ?></p>
+      <?php endif; ?>
       <button name="login" type="submit">Đăng Nhập</button>
     </form>
-    <p class="register-link">Bạn chưa có tài khoản? <a href="register.php">Đăng ký</a></p>
+    <p class="register-link">Bạn chưa có tài khoản? <a href="dangkitaikhoan.php">Đăng ký</a></p>
   </div>
 </body>
 
